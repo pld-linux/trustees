@@ -1,8 +1,9 @@
 #
-%bcond_with	dist_kernel
-%bcond_with	smp
+%bcond_without	dist_kernel	# without distribution kernel
+%bcond_without	smp		# don't build SMP module
 #
 Summary:	Trustees LSM
+Summary(pl):	Modu³ LSM Trustees
 Name:		trustees2.6
 Version:	0
 %define pre 20041113
@@ -11,12 +12,16 @@ License:	GPL
 Group:		Base/Kernel
 Source0:	%{name}-%{pre}.tar.gz
 # Source0-md5:	dd789d54dc735e622843ad23dcd6d0fd
-BuildRequires:	kernel-module-build
+URL:		http://trustees.sourceforge.net/
+%{?with_dist_kernel:BuildRequires:	kernel-module-build >= 2.6.0}
 BuildRequires:	rpmbuild(macros) >= 1.153
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
-Trustees LSM
+Trustees LSM.
+
+%description -l pl
+Modu³ LSM Trustees.
 
 %define buildconfigs %{?with_dist_kernel:%{?with_smp:smp} up}%{!?with_dist_kernel:nondist}
 
