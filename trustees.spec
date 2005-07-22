@@ -1,40 +1,79 @@
 #
+# Conditional build:
 %bcond_without	dist_kernel	# without distribution kernel
+%bcond_without	kernel		# don't build kernel modules
 %bcond_without	smp		# don't build SMP module
+%bcond_without	userspace	# don't build userspace module
 #
 Summary:	Trustees LSM
 Summary(pl):	Modu³ LSM Trustees
-Name:		trustees2.6
-Version:	0
-%define pre 20041113
-Release:	0.%{pre}.1
+Name:		trustees
+Version:	3.0
+%define rel	0.1
+Release:	%{rel}
 License:	GPL
 Group:		Base/Kernel
-Source0:	%{name}-%{pre}.tar.gz
-# Source0-md5:	dd789d54dc735e622843ad23dcd6d0fd
+Source0:	http://dl.sourceforge.net/trustees/%{name}-%{version}.tar.bz2
+# Source0-md5:	45b7e894f9fe2321d671a5272dac76c2
 URL:		http://trustees.sourceforge.net/
 %{?with_dist_kernel:BuildRequires:	kernel-module-build >= 2.6.0}
 BuildRequires:	rpmbuild(macros) >= 1.153
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
-Trustees LSM.
+Trustees is an advanced linux permission system inspired by Netware.
 
 %description -l pl
-Modu³ LSM Trustees.
+Trustees jest zaawansowanym systemem linuksowych praw dostêpu
+zainspirowanym przez Netware.
 
-%define buildconfigs %{?with_dist_kernel:%{?with_smp:smp} up}%{!?with_dist_kernel:nondist}
+%package -n kernel-misc-trustees
+Summary:	Trustees kernel module
+Summary(pl):	Modu³ j±dra Trustees
+Release:	%{rel}@%{_kernel_ver_str}
+Group:		Base/Kernel
+%{?with_dist_kernel:%requires_releq_kernel_up}
+Requires(post,postun):	/sbin/depmod
+Requires:	trustees
+
+%description -n kernel-misc-trustees
+Trustees is an advanced linux permission system inspired by Netware.
+This package contains Trustees kernel module.
+
+%description -n kernel-misc-trustees -l pl
+Trustees jest zaawansowanym systemem linuksowych praw dostêpu
+zainspirowanym przez Netware. Ten pakiet zawiera modu³ j±dra Trustees.
+
+%package -n kernel-smp-misc-trustees
+Summary:	Trustees SMP kernel module
+Summary(pl):	Modu³ SMP j±dra Trustees
+Release:	%{rel}@%{_kernel_ver_str}
+Group:		Base/Kernel
+%{?with_dist_kernel:%requires_releq_kernel_smp}
+Requires(post,postun):	/sbin/depmod
+Requires:	trustees
+
+%description -n kernel-smp-misc-trustees
+Trustees is an advanced linux permission system inspired by Netware.
+This package contains Trustees kernel module.
+
+%description -n kernel-smp-misc-trustees -l pl
+Trustees jest zaawansowanym systemem linuksowych praw dostêpu
+zainspirowanym przez Netware. Ten pakiet zawiera modu³ j±dra Trustees.
 
 %prep
-%setup -q -n trustees
+%setup -q
 
 %build
-#%{__make} prereq \
-#	CC="%{__cc}"
+%if %{with userspace}
+cd src
+%{__make}
+cd ..
+%endif
 
+%if %{with kernel}
 cd module
-
-for cfg in %{buildconfigs}; do
+for cfg in %{?with_dist_kernel:%{?with_smp:smp} up}%{!?with_dist_kernel:nondist}; do
 	mkdir -p modules/$cfg
 	if [ ! -r "%{_kernelsrcdir}/config-$cfg" ]; then
 		exit 1
@@ -50,7 +89,7 @@ for cfg in %{buildconfigs}; do
 	chmod 700 modules
 	ln -sf %{_kernelsrcdir}/config-$cfg .config
 	ln -sf %{_kernelsrcdir}/include/linux/autoconf-${cfg}.h include/linux/autoconf.h
-	ln -sf %{_kernelsrcdir}/include/asm-%{_target_base_arch} include/asm #FIXME
+	ln -sf %{_kernelsrcdir}/include/asm-%{_target_base_arch} include/asm
 	cp ../include/*.h include/
 	touch include/config/MARKER
 	%{__make} -C %{_kernelsrcdir} modules \
@@ -59,28 +98,56 @@ for cfg in %{buildconfigs}; do
 		%{?with_verbose:V=1}
 	mv *.ko modules/$cfg/
 done
+%endif
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
+%if %{with kernel}
 install -d $RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}{,smp}/misc
-for cfg in %{buildconfigs}; do
-	cfgdest=''
-	if [ "$cfg" = "smp" ]; then
-		install modules/$cfg/*.ko \
-			$RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}$cfg/misc
-	else
-		install modules/$cfg/*.ko \
-			$RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}/misc
-	fi
-done
+install module/modules/%{?with_dist_kernel:up}%{!?with_dist_kernel:nondist}/*.ko \
+		$RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}/misc
+%if %{with smp} && %{with dist_kernel}
+install module/modules/smp/*.ko \
+		$RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}smp/misc
+%endif
+%endif
+
+%if %{with userspace}
+install -d $RPM_BUILD_ROOT/sbin
+install src/settrustees $RPM_BUILD_ROOT/sbin
+%endif
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
+%post	-n kernel-misc-trustees
+%depmod %{_kernel_ver}
+
+%postun	-n kernel-misc-trustees
+%depmod %{_kernel_ver}
+
+%post	-n kernel-smp-misc-trustees
+%depmod %{_kernel_ver}smp
+
+%postun	-n kernel-smp-misc-trustees
+%depmod %{_kernel_ver}smp
+
+%if %{with userspace}
 %files
 %defattr(644,root,root,755)
-%doc README ChangeLog
-%attr(600,root,root) %config(noreplace) /etc/trustees2.6.conf
-%attr(755,root,root) /sbin/*
-%attr(755,root,root) %{_libdir}/*.so.*
+%doc README examples/*
+%attr(755,root,root) /sbin/settrustees
+%endif
+
+%if %{with kernel}
+%files -n kernel-misc-trustees
+%defattr(644,root,root,755)
+/lib/modules/%{_kernel_ver}/misc/*
+
+%if %{with smp} && %{with dist_kernel}
+%files -n kernel-smp-misc-trustees
+%defattr(644,root,root,755)
+/lib/modules/%{_kernel_ver}smp/misc/*
+%endif
+%endif
