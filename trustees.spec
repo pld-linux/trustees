@@ -21,7 +21,7 @@ BuildRequires:	rpmbuild(macros) >= 1.153
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
-Trustees is an advanced linux permission system inspired by Netware.
+Trustees is an advanced Linux permission system inspired by Netware.
 
 %description -l pl
 Trustees jest zaawansowanym systemem linuksowych praw dostêpu
@@ -37,7 +37,7 @@ Requires(post,postun):	/sbin/depmod
 Requires:	trustees
 
 %description -n kernel-misc-trustees
-Trustees is an advanced linux permission system inspired by Netware.
+Trustees is an advanced Linux permission system inspired by Netware.
 This package contains Trustees kernel module.
 
 %description -n kernel-misc-trustees -l pl
@@ -54,7 +54,7 @@ Requires(post,postun):	/sbin/depmod
 Requires:	trustees
 
 %description -n kernel-smp-misc-trustees
-Trustees is an advanced linux permission system inspired by Netware.
+Trustees is an advanced Linux permission system inspired by Netware.
 This package contains Trustees kernel module.
 
 %description -n kernel-smp-misc-trustees -l pl
