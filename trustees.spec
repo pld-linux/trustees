@@ -5,18 +5,18 @@
 %bcond_without	smp		# don't build SMP module
 %bcond_without	userspace	# don't build userspace module
 #
+%define rel	0.1
 Summary:	Trustees LSM
 Summary(pl):	Modu³ LSM Trustees
 Name:		trustees
 Version:	3.0
-%define rel	0.1
 Release:	%{rel}
 License:	GPL
 Group:		Base/Kernel
 Source0:	http://dl.sourceforge.net/trustees/%{name}-%{version}.tar.bz2
 # Source0-md5:	45b7e894f9fe2321d671a5272dac76c2
 URL:		http://trustees.sourceforge.net/
-%{?with_dist_kernel:BuildRequires:	kernel-module-build >= 2.6.0}
+%{?with_dist_kernel:BuildRequires:	kernel-module-build >= 3:2.6.0}
 BuildRequires:	rpmbuild(macros) >= 1.153
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
