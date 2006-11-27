@@ -66,8 +66,7 @@ zainspirowanym przez Netware. Ten pakiet zawiera modu³ j±dra Trustees.
 
 %build
 %if %{with userspace}
-cd src
-%{__make}
+%{__make} -C src
 cd ..
 %endif
 
