@@ -7,7 +7,7 @@
 #
 %define rel	0.1
 Summary:	Trustees LSM
-Summary(pl.UTF-8):   Moduł LSM Trustees
+Summary(pl.UTF-8):	Moduł LSM Trustees
 Name:		trustees
 Version:	3.0
 Release:	%{rel}
@@ -29,7 +29,7 @@ zainspirowanym przez Netware.
 
 %package -n kernel-misc-trustees
 Summary:	Trustees kernel module
-Summary(pl.UTF-8):   Moduł jądra Trustees
+Summary(pl.UTF-8):	Moduł jądra Trustees
 Release:	%{rel}@%{_kernel_ver_str}
 Group:		Base/Kernel
 %{?with_dist_kernel:%requires_releq_kernel_up}
@@ -46,7 +46,7 @@ zainspirowanym przez Netware. Ten pakiet zawiera moduł jądra Trustees.
 
 %package -n kernel-smp-misc-trustees
 Summary:	Trustees SMP kernel module
-Summary(pl.UTF-8):   Moduł SMP jądra Trustees
+Summary(pl.UTF-8):	Moduł SMP jądra Trustees
 Release:	%{rel}@%{_kernel_ver_str}
 Group:		Base/Kernel
 %{?with_dist_kernel:%requires_releq_kernel_smp}
