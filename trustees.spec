@@ -7,7 +7,7 @@
 #
 %define rel	0.1
 Summary:	Trustees LSM
-Summary(pl):	Modu³ LSM Trustees
+Summary(pl.UTF-8):   ModuÅ‚ LSM Trustees
 Name:		trustees
 Version:	3.0
 Release:	%{rel}
@@ -23,13 +23,13 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %description
 Trustees is an advanced Linux permission system inspired by Netware.
 
-%description -l pl
-Trustees jest zaawansowanym systemem linuksowych praw dostêpu
+%description -l pl.UTF-8
+Trustees jest zaawansowanym systemem linuksowych praw dostÄ™pu
 zainspirowanym przez Netware.
 
 %package -n kernel-misc-trustees
 Summary:	Trustees kernel module
-Summary(pl):	Modu³ j±dra Trustees
+Summary(pl.UTF-8):   ModuÅ‚ jÄ…dra Trustees
 Release:	%{rel}@%{_kernel_ver_str}
 Group:		Base/Kernel
 %{?with_dist_kernel:%requires_releq_kernel_up}
@@ -40,13 +40,13 @@ Requires:	trustees
 Trustees is an advanced Linux permission system inspired by Netware.
 This package contains Trustees kernel module.
 
-%description -n kernel-misc-trustees -l pl
-Trustees jest zaawansowanym systemem linuksowych praw dostêpu
-zainspirowanym przez Netware. Ten pakiet zawiera modu³ j±dra Trustees.
+%description -n kernel-misc-trustees -l pl.UTF-8
+Trustees jest zaawansowanym systemem linuksowych praw dostÄ™pu
+zainspirowanym przez Netware. Ten pakiet zawiera moduÅ‚ jÄ…dra Trustees.
 
 %package -n kernel-smp-misc-trustees
 Summary:	Trustees SMP kernel module
-Summary(pl):	Modu³ SMP j±dra Trustees
+Summary(pl.UTF-8):   ModuÅ‚ SMP jÄ…dra Trustees
 Release:	%{rel}@%{_kernel_ver_str}
 Group:		Base/Kernel
 %{?with_dist_kernel:%requires_releq_kernel_smp}
@@ -57,9 +57,9 @@ Requires:	trustees
 Trustees is an advanced Linux permission system inspired by Netware.
 This package contains Trustees kernel module.
 
-%description -n kernel-smp-misc-trustees -l pl
-Trustees jest zaawansowanym systemem linuksowych praw dostêpu
-zainspirowanym przez Netware. Ten pakiet zawiera modu³ j±dra Trustees.
+%description -n kernel-smp-misc-trustees -l pl.UTF-8
+Trustees jest zaawansowanym systemem linuksowych praw dostÄ™pu
+zainspirowanym przez Netware. Ten pakiet zawiera moduÅ‚ jÄ…dra Trustees.
 
 %prep
 %setup -q
