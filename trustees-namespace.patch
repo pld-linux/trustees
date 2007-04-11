@@ -1,0 +1,107 @@
+diff -urp trustees-3.0./module/security.c trustees-3.0/module/security.c
+--- trustees-3.0./module/security.c	2005-07-19 03:38:14.000000000 +0200
++++ trustees-3.0/module/security.c	2007-04-11 14:55:36.561585000 +0200
+@@ -36,7 +36,8 @@
+ #include <linux/fs.h>
+ #include <linux/slab.h>
+ #include <linux/smp_lock.h>
+-#include <linux/namespace.h>
++#include <linux/nsproxy.h>
++#include <linux/mnt_namespace.h>
+ 
+ #include "trustees_private.h"
+ 
+@@ -85,8 +86,9 @@ static inline int has_unix_perm(struct i
+ static inline struct vfsmount *find_inode_mnt(struct inode *inode,
+ 					      struct nameidata *nd)
+ {
+-	struct namespace *ns;
++	struct mnt_namespace *ns;
+ 	struct vfsmount *mnt = NULL;
++	static struct rw_semaphore namespace_sem;
+ 
+ 	if (likely(nd))
+ 		return mntget(nd->mnt);
+@@ -94,8 +96,8 @@ static inline struct vfsmount *find_inod
+ 	/* Okay, we need to find the vfsmount by looking
+ 	 * at the namespace now.
+ 	 */
+-	ns = current->namespace;
+-	down_read(&ns->sem);
++	ns = current->nsproxy->mnt_ns;
++	down_read(&namespace_sem);
+ 
+ 	list_for_each_entry(mnt, &ns->list, mnt_list) {
+ 		if (mnt->mnt_sb == inode->i_sb) {
+@@ -105,7 +107,7 @@ static inline struct vfsmount *find_inod
+ 	}
+ 
+       out:
+-	up_read(&ns->sem);
++	up_read(&namespace_sem);
+ 
+ 	return mnt;
+ }
+@@ -143,7 +145,7 @@ struct security_operations trustees_secu
+ #define ALL_MAYS (MAY_WRITE | MAY_EXEC | MAY_READ)
+ /* Converts a trustee_mask to a normal unix mask
+  */
+-static int inline trustee_mask_to_normal_mask(int mask, int isdir)
++static inline int trustee_mask_to_normal_mask(int mask, int isdir)
+ {
+ 	int r = 0;
+ 	if ((mask & TRUSTEE_READ_MASK) && !isdir)
+--- trustees-3.0./module/fs.c	2004-11-09 08:58:37.000000000 +0100
++++ trustees-3.0/module/fs.c	2007-04-11 15:54:41.823150000 +0200
+@@ -26,10 +26,6 @@
+ /* this code basically just sets up the superblock and registers the filesystem */
+ static int trustees_fill_super(struct super_block *sb, void *data,
+ 			       int silent);
+-static struct super_block *trustees_get_super(struct file_system_type *fst,
+-					      int flags,
+-					      const char *devname,
+-					      void *data);
+ 
+ /* File operations
+  *
+@@ -49,17 +45,20 @@ static ssize_t trustees_write_trustees(s
+ 				       size_t count, loff_t * offset);
+ static int trustees_fill_super(struct super_block *sb, void *data,
+ 			       int silent);
+-static struct super_block *trustees_get_super(struct file_system_type *fst,
+-					      int flags,
+-					      const char *devname,
+-					      void *data);
++
++static int trustees_get_sb(struct file_system_type *fs_type,
++		int flags, const char *dev_name, 
++		void *data, struct vfsmount *mnt)
++{
++	        return get_sb_single(fs_type, flags, data, trustees_fill_super, mnt);
++}
+ 
+ /* Various structs
+  */
+ static struct file_system_type trustees_filesystem = {
+ 	.owner = THIS_MODULE,
+ 	.name = "trusteesfs",
+-	.get_sb = trustees_get_super,
++	.get_sb = trustees_get_sb,
+ 	.kill_sb = kill_litter_super,
+ };
+ 
+@@ -95,14 +94,6 @@ static int trustees_fill_super(struct su
+ 	return simple_fill_super(sb, TRUSTEES_MAGIC, trustees_files);
+ }
+ 
+-static struct super_block *trustees_get_super(struct file_system_type *fst,
+-					      int flags,
+-					      const char *devname,
+-					      void *data)
+-{
+-	return get_sb_single(fst, flags, data, trustees_fill_super);
+-}
+-
+ int trustees_init_fs(void)
+ {
+ 	return register_filesystem(&trustees_filesystem);
