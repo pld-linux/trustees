@@ -2,10 +2,9 @@
 # Conditional build:
 %bcond_without	dist_kernel	# without distribution kernel
 %bcond_without	kernel		# don't build kernel modules
-%bcond_without	smp		# don't build SMP module
 %bcond_without	userspace	# don't build userspace module
 #
-%define rel	0.1
+%define rel	1
 Summary:	Trustees LSM
 Summary(pl.UTF-8):	Moduł LSM Trustees
 Name:		trustees
@@ -15,9 +14,10 @@ License:	GPL
 Group:		Base/Kernel
 Source0:	http://dl.sourceforge.net/trustees/%{name}-%{version}.tar.bz2
 # Source0-md5:	45b7e894f9fe2321d671a5272dac76c2
+Patch0:		trustees-namespace.patch
 URL:		http://trustees.sourceforge.net/
-%{?with_dist_kernel:BuildRequires:	kernel-module-build >= 3:2.6.0}
-BuildRequires:	rpmbuild(macros) >= 1.153
+%{?with_dist_kernel:BuildRequires:	kernel-module-build >= 3:2.6.20}
+BuildRequires:	rpmbuild(macros) >= 1.379
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -32,7 +32,7 @@ Summary:	Trustees kernel module
 Summary(pl.UTF-8):	Moduł jądra Trustees
 Release:	%{rel}@%{_kernel_ver_str}
 Group:		Base/Kernel
-%{?with_dist_kernel:%requires_releq_kernel_up}
+%{?with_dist_kernel:%requires_releq_kernel}
 Requires(post,postun):	/sbin/depmod
 Requires:	trustees
 
@@ -44,72 +44,25 @@ This package contains Trustees kernel module.
 Trustees jest zaawansowanym systemem linuksowych praw dostępu
 zainspirowanym przez Netware. Ten pakiet zawiera moduł jądra Trustees.
 
-%package -n kernel-smp-misc-trustees
-Summary:	Trustees SMP kernel module
-Summary(pl.UTF-8):	Moduł SMP jądra Trustees
-Release:	%{rel}@%{_kernel_ver_str}
-Group:		Base/Kernel
-%{?with_dist_kernel:%requires_releq_kernel_smp}
-Requires(post,postun):	/sbin/depmod
-Requires:	trustees
-
-%description -n kernel-smp-misc-trustees
-Trustees is an advanced Linux permission system inspired by Netware.
-This package contains Trustees kernel module.
-
-%description -n kernel-smp-misc-trustees -l pl.UTF-8
-Trustees jest zaawansowanym systemem linuksowych praw dostępu
-zainspirowanym przez Netware. Ten pakiet zawiera moduł jądra Trustees.
-
 %prep
 %setup -q
+%patch0 -p1
 
 %build
 %if %{with userspace}
-%{__make} -C src
+%{__make} -C src \
+	CFLAGS="%{rpmcflags} -I$PWD/include"
 %endif
 
 %if %{with kernel}
-cd module
-for cfg in %{?with_dist_kernel:%{?with_smp:smp} up}%{!?with_dist_kernel:nondist}; do
-	mkdir -p modules/$cfg
-	if [ ! -r "%{_kernelsrcdir}/config-$cfg" ]; then
-		exit 1
-	fi
-	rm -rf include
-	chmod 000 modules
-	install -d include/{linux,config}
-	%{__make} -C %{_kernelsrcdir} clean \
-		SUBDIRS=$PWD \
-		O=$PWD \
-		%{?with_verbose:V=1}
-	install -d include/config
-	chmod 700 modules
-	ln -sf %{_kernelsrcdir}/config-$cfg .config
-	ln -sf %{_kernelsrcdir}/include/linux/autoconf-${cfg}.h include/linux/autoconf.h
-	ln -sf %{_kernelsrcdir}/include/asm-%{_target_base_arch} include/asm
-	ln -sf %{_kernelsrcdir}/Module.symvers-$cfg Module.symvers
-	cp ../include/*.h include/
-	touch include/config/MARKER
-	%{__make} -C %{_kernelsrcdir} modules \
-		SUBDIRS=$PWD \
-		O=$PWD \
-		%{?with_verbose:V=1}
-	mv *.ko modules/$cfg/
-done
+%build_kernel_modules -C module -m %{name}
 %endif
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
 %if %{with kernel}
-install -d $RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}{,smp}/misc
-install module/modules/%{?with_dist_kernel:up}%{!?with_dist_kernel:nondist}/*.ko \
-		$RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}/misc
-%if %{with smp} && %{with dist_kernel}
-install module/modules/smp/*.ko \
-		$RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}smp/misc
-%endif
+%install_kernel_modules -m module/trustees -d misc
 %endif
 
 %if %{with userspace}
@@ -126,12 +79,6 @@ rm -rf $RPM_BUILD_ROOT
 %postun	-n kernel-misc-trustees
 %depmod %{_kernel_ver}
 
-%post	-n kernel-smp-misc-trustees
-%depmod %{_kernel_ver}smp
-
-%postun	-n kernel-smp-misc-trustees
-%depmod %{_kernel_ver}smp
-
 %if %{with userspace}
 %files
 %defattr(644,root,root,755)
@@ -143,10 +90,4 @@ rm -rf $RPM_BUILD_ROOT
 %files -n kernel-misc-trustees
 %defattr(644,root,root,755)
 /lib/modules/%{_kernel_ver}/misc/*
-
-%if %{with smp} && %{with dist_kernel}
-%files -n kernel-smp-misc-trustees
-%defattr(644,root,root,755)
-/lib/modules/%{_kernel_ver}smp/misc/*
-%endif
 %endif
