@@ -16,7 +16,7 @@ Source0:	http://dl.sourceforge.net/trustees/%{name}-%{version}.tar.bz2
 # Source0-md5:	45b7e894f9fe2321d671a5272dac76c2
 Patch0:		trustees-namespace.patch
 URL:		http://trustees.sourceforge.net/
-%{?with_dist_kernel:BuildRequires:	kernel-module-build >= 3:2.6.20}
+%{?with_dist_kernel:BuildRequires:	kernel-module-build >= 3:2.6.20.2}
 BuildRequires:	rpmbuild(macros) >= 1.379
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
