@@ -16,7 +16,7 @@ Source0:	http://dl.sourceforge.net/trustees/%{name}-%{version}.tar.bz2
 # Source0-md5:	45b7e894f9fe2321d671a5272dac76c2
 Patch0:		trustees-namespace.patch
 URL:		http://trustees.sourceforge.net/
-%{?with_dist_kernel:BuildRequires:	kernel-module-build >= 3:2.6.20.2}
+%{?with_dist_kernel:BuildRequires:	kernel%{_alt_kernel}-module-build >= 3:2.6.20.2}
 BuildRequires:	rpmbuild(macros) >= 1.379
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -27,7 +27,7 @@ Trustees is an advanced Linux permission system inspired by Netware.
 Trustees jest zaawansowanym systemem linuksowych praw dostępu
 zainspirowanym przez Netware.
 
-%package -n kernel-misc-trustees
+%package -n kernel%{_alt_kernel}-misc-trustees
 Summary:	Trustees kernel module
 Summary(pl.UTF-8):	Moduł jądra Trustees
 Release:	%{rel}@%{_kernel_ver_str}
@@ -36,11 +36,11 @@ Group:		Base/Kernel
 Requires(post,postun):	/sbin/depmod
 Requires:	trustees
 
-%description -n kernel-misc-trustees
+%description -n kernel%{_alt_kernel}-misc-trustees
 Trustees is an advanced Linux permission system inspired by Netware.
 This package contains Trustees kernel module.
 
-%description -n kernel-misc-trustees -l pl.UTF-8
+%description -n kernel%{_alt_kernel}-misc-trustees -l pl.UTF-8
 Trustees jest zaawansowanym systemem linuksowych praw dostępu
 zainspirowanym przez Netware. Ten pakiet zawiera moduł jądra Trustees.
 
@@ -73,10 +73,10 @@ install src/settrustees $RPM_BUILD_ROOT/sbin
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%post	-n kernel-misc-trustees
+%post	-n kernel%{_alt_kernel}-misc-trustees
 %depmod %{_kernel_ver}
 
-%postun	-n kernel-misc-trustees
+%postun	-n kernel%{_alt_kernel}-misc-trustees
 %depmod %{_kernel_ver}
 
 %if %{with userspace}
@@ -87,7 +87,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %if %{with kernel}
-%files -n kernel-misc-trustees
+%files -n kernel%{_alt_kernel}-misc-trustees
 %defattr(644,root,root,755)
 /lib/modules/%{_kernel_ver}/misc/*
 %endif
