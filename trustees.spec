@@ -46,7 +46,7 @@ zainspirowanym przez Netware. Ten pakiet zawiera moduł jądra Trustees.
 
 %prep
 %setup -q
-%patch0 -p1
+%patch -P0 -p1
 
 %build
 %if %{with userspace}
